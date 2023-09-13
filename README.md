@@ -1,7 +1,7 @@
 go-timecode
 ===========
 
-[![GoDoc](https://godoc.org/github.com/abema/go-timecode/timecode?status.svg)](https://godoc.org/github.com/abema/go-timecode/timecode)
+[![Go Reference](https://pkg.go.dev/badge/github.com/abema/go-timecode/timecode.svg)](https://pkg.go.dev/github.com/abema/go-timecode/timecode)
 
 go-timecode is a Go library for SMPTE 12M timecodes.
 
@@ -22,8 +22,10 @@ go get github.com/abema/go-timecode/timecode
 
 Usage
 -----------
-[GoDoc Examples](https://godoc.org/github.com/abema/go-timecode/timecode/#pkg-examples).
+
+[Examples](https://pkg.go.dev/github.com/abema/go-timecode/timecode#pkg-examples).
 
 License
 -----------
+
 go-timecode is available under the [MIT License](https://opensource.org/license/mit/).

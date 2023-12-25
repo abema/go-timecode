@@ -186,6 +186,8 @@ func TestNewTestcodeNonDF(t *testing.T) {
 		assert.Equal(t, "00:00:59:23", tc.String())
 		assert.Equal(t, uint64(1439), tc.Frames())
 		assert.Equal(t, 59.958, math.Round(tc.Duration().Seconds()*1000)/1000)
+		assert.Equal(t, int32(24), tc.FramerateNumerator())
+		assert.Equal(t, int32(1), tc.FramerateDenominator())
 
 		tc, err = NewTimecode(1440, 24, 1)
 		assert.NoError(t, err)
@@ -225,6 +227,8 @@ func TestNewTestcodeNonDF(t *testing.T) {
 		assert.Equal(t, "00:00:59:24", tc.String())
 		assert.Equal(t, uint64(1499), tc.Frames())
 		assert.Equal(t, 59.96, math.Round(tc.Duration().Seconds()*1000)/1000)
+		assert.Equal(t, int32(25), tc.FramerateNumerator())
+		assert.Equal(t, int32(1), tc.FramerateDenominator())
 
 		tc, err = NewTimecode(1500, 25, 1)
 		assert.NoError(t, err)
@@ -264,6 +268,8 @@ func TestNewTestcodeNonDF(t *testing.T) {
 		assert.Equal(t, "00:00:59:29", tc.String())
 		assert.Equal(t, uint64(1799), tc.Frames())
 		assert.Equal(t, 59.967, math.Round(tc.Duration().Seconds()*1000)/1000)
+		assert.Equal(t, int32(30), tc.FramerateNumerator())
+		assert.Equal(t, int32(1), tc.FramerateDenominator())
 
 		tc, err = NewTimecode(1800, 30, 1)
 		assert.NoError(t, err)
@@ -303,6 +309,8 @@ func TestNewTestcodeNonDF(t *testing.T) {
 		assert.Equal(t, "00:00:59:47", tc.String())
 		assert.Equal(t, uint64(2879), tc.Frames())
 		assert.Equal(t, 59.979, math.Round(tc.Duration().Seconds()*1000)/1000)
+		assert.Equal(t, int32(48), tc.FramerateNumerator())
+		assert.Equal(t, int32(1), tc.FramerateDenominator())
 
 		tc, err = NewTimecode(2880, 48, 1)
 		assert.NoError(t, err)
@@ -342,6 +350,8 @@ func TestNewTestcodeNonDF(t *testing.T) {
 		assert.Equal(t, "00:00:59:49", tc.String())
 		assert.Equal(t, uint64(2999), tc.Frames())
 		assert.Equal(t, 59.98, math.Round(tc.Duration().Seconds()*1000)/1000)
+		assert.Equal(t, int32(50), tc.FramerateNumerator())
+		assert.Equal(t, int32(1), tc.FramerateDenominator())
 
 		tc, err = NewTimecode(3000, 50, 1)
 		assert.NoError(t, err)
@@ -381,6 +391,8 @@ func TestNewTestcodeNonDF(t *testing.T) {
 		assert.Equal(t, "00:00:00:00", tc.String())
 		assert.Equal(t, uint64(0), tc.Frames())
 		assert.Equal(t, 0.0, math.Round(tc.Duration().Seconds()*1000)/1000)
+		assert.Equal(t, int32(60), tc.FramerateNumerator())
+		assert.Equal(t, int32(1), tc.FramerateDenominator())
 
 		tc, err = NewTimecode(3599, 60, 1)
 		assert.NoError(t, err)

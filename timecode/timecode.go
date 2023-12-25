@@ -224,6 +224,16 @@ func (tc *Timecode) Duration() time.Duration {
 	return time.Duration((float64(tc.Frames()) * float64(tc.r.denominator) / float64(tc.r.numerator)) * float64(time.Second))
 }
 
+// Framerate denominator.
+func (tc *Timecode) FramerateDenominator() int32 {
+	return tc.r.denominator
+}
+
+// Framerate numerator.
+func (tc *Timecode) FramerateNumerator() int32 {
+	return tc.r.numerator
+}
+
 // Add Timecode and Timecode and return new Timecode.
 func (tc *Timecode) Add(other *Timecode) (*Timecode, error) {
 	if !tc.r.equal(other.r) {

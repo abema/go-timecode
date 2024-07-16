@@ -56,14 +56,14 @@ var (
 
 // Timecode represents timecode.
 type Timecode struct {
-	preferDF bool
-	sep      string
-	lastSep  string
-	r        *rate
-	HH       uint64
-	MM       uint64
-	SS       uint64
-	FF       uint64
+	forceAsNDF bool
+	sep        string
+	lastSep    string
+	r          *rate
+	HH         uint64
+	MM         uint64
+	SS         uint64
+	FF         uint64
 }
 
 // newNDFRate returns new NDF rate.
@@ -89,18 +89,22 @@ func newDFRate(num, den int32) (*rate, error) {
 }
 
 // newRate returns new rate.
-func newRate(num, den int32, preferDF bool) (*rate, error) {
-	if preferDF {
-		r, err := newDFRate(num, den)
-		if err != nil {
-			if errors.Is(err, ErrUnsupportedFrameRate) {
-				return newNDFRate(num, den)
-			}
-			return nil, err
-		}
-		return r, nil
+func newRate(num, den int32, forceAsNDF bool) (*rate, error) {
+	ndf, err := newNDFRate(num, den)
+	if err != nil {
+		return nil, err
 	}
-	return newNDFRate(num, den)
+	if forceAsNDF {
+		return ndf, err
+	}
+	df, err := newDFRate(num, den)
+	if err != nil {
+		if errors.Is(err, ErrUnsupportedFrameRate) {
+			return ndf, nil
+		}
+		return nil, err
+	}
+	return df, nil
 }
 
 // IsSupportedFrameRate returns whether frame rate is supported.
@@ -111,7 +115,7 @@ func IsSupportedFrameRate(num, den int32) bool {
 
 // IsRepresentableFramesOptionParam represents IsRepresentableFrames option parameter.
 type IsRepresentableFramesOptionParam struct {
-	PreferDF bool
+	ForceAsNDF bool
 }
 
 // IsRepresentableFramesOption represents IsRepresentableFrames option.
@@ -120,7 +124,7 @@ type IsRepresentableFramesOption func(*IsRepresentableFramesOptionParam)
 // newIsRepresentableFramesOptionParam returns new IsRepresentableFramesOptionParam.
 func newIsRepresentableFramesOptionParam() IsRepresentableFramesOptionParam {
 	return IsRepresentableFramesOptionParam{
-		PreferDF: true, // if frame rate is DF or NDF, assume DF
+		ForceAsNDF: true, // if frame rate is DF or NDF, assume NDF
 	}
 }
 
@@ -136,7 +140,7 @@ func IsRepresentableFrames(frames uint64, num, den int32, opts ...IsRepresentabl
 	p := newIsRepresentableFramesOptionParam()
 	p.applyIsRepresentableFramesOption(opts...)
 
-	r, err := newRate(num, den, p.PreferDF)
+	r, err := newRate(num, den, p.ForceAsNDF)
 	if err != nil {
 		return false
 	}
@@ -145,9 +149,9 @@ func IsRepresentableFrames(frames uint64, num, den int32, opts ...IsRepresentabl
 
 // TimecodeOptionParam represents timecode option parameter.
 type TimecodeOptionParam struct {
-	PreferDF bool
-	Sep      string
-	LastSep  string
+	ForceAsNDF bool
+	Sep        string
+	LastSep    string
 }
 
 // TimecodeOption represents timecode option.
@@ -156,9 +160,9 @@ type TimecodeOption func(*TimecodeOptionParam)
 // newTimecodeOptionParam returns new TimecodeOptionParam.
 func newTimecodeOptionParam() TimecodeOptionParam {
 	return TimecodeOptionParam{
-		PreferDF: true, // if frame rate is 29.97 or 59.94, assume DF. otherwise, assume NDF
-		Sep:      ":",
-		LastSep:  ":",
+		ForceAsNDF: false, // true, if frame rate is DF or NDF, assume NDF. otherwise, assume DF
+		Sep:        ":",
+		LastSep:    ":",
 	}
 }
 
@@ -174,7 +178,7 @@ func NewTimecode(frames uint64, num, den int32, opts ...TimecodeOption) (*Timeco
 	p := newTimecodeOptionParam()
 	p.applyTimecodeOption(opts...)
 
-	r, err := newRate(num, den, p.PreferDF)
+	r, err := newRate(num, den, p.ForceAsNDF)
 	if err != nil {
 		return nil, err
 	}
@@ -185,10 +189,10 @@ func NewTimecode(frames uint64, num, den int32, opts ...TimecodeOption) (*Timeco
 	}
 
 	tc, err := Reset(&Timecode{
-		preferDF: p.PreferDF,
-		sep:      p.Sep,
-		lastSep:  lastSep,
-		r:        r,
+		forceAsNDF: p.ForceAsNDF,
+		sep:        p.Sep,
+		lastSep:    lastSep,
+		r:          r,
 	}, frames)
 	if err != nil {
 		return nil, err
@@ -198,9 +202,9 @@ func NewTimecode(frames uint64, num, den int32, opts ...TimecodeOption) (*Timeco
 
 // TimecodeOptionParam represents timecode option parameter.
 type ParseTimecodeOptionParam struct {
-	PreferDF bool
-	Sep      string
-	LastSep  string
+	ForceAsNDF bool
+	Sep        string
+	LastSep    string
 }
 
 // ParseTimecodeOption represents parse timecode option.
@@ -209,7 +213,7 @@ type ParseTimecodeOption func(*ParseTimecodeOptionParam)
 // newParseTimecodeOptionParam returns new ParseTimecodeOptionParam.
 func newParseTimecodeOptionParam() ParseTimecodeOptionParam {
 	return ParseTimecodeOptionParam{
-		PreferDF: true, // if frame rate is 29.97 or 59.94, assume DF. otherwise, assume NDF
+		ForceAsNDF: false, // if frame rate is 29.97 or 59.94, assume NDF. otherwise, assume DF
 	}
 }
 
@@ -225,7 +229,7 @@ func ParseTimecode(s string, num, den int32, opts ...ParseTimecodeOption) (*Time
 	p := newParseTimecodeOptionParam()
 	p.applyParseTimecodeOption(opts...)
 
-	r, err := newRate(num, den, p.PreferDF)
+	r, err := newRate(num, den, p.ForceAsNDF)
 	if err != nil {
 		return nil, err
 	}
@@ -252,14 +256,14 @@ func ParseTimecode(s string, num, den int32, opts ...ParseTimecodeOption) (*Time
 	}
 
 	return &Timecode{
-		preferDF: p.PreferDF,
-		sep:      sep,
-		lastSep:  lastSep,
-		r:        r,
-		HH:       uint64(hh),
-		MM:       uint64(mm),
-		SS:       uint64(ss),
-		FF:       uint64(ff),
+		forceAsNDF: p.ForceAsNDF,
+		sep:        sep,
+		lastSep:    lastSep,
+		r:          r,
+		HH:         uint64(hh),
+		MM:         uint64(mm),
+		SS:         uint64(ss),
+		FF:         uint64(ff),
 	}, nil
 }
 
